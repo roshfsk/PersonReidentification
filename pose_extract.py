@@ -15,8 +15,8 @@ import pylab as plt
 inpath = 'test/'
 roipath = 'test_roi/'
 outpath = 'test_out/'
-#test_image = 'test/000050.jpg'
-test_image = 'sample_image/f3.png'
+test_image = 'test/000001.jpg'
+#test_image = 'sample_image/f3.png'
 oriImg = cv.imread(test_image) # B,G,R order
 f = plt.imshow(oriImg[:,:,[2,1,0]]) # reorder it before displaying
 
@@ -402,24 +402,27 @@ for person in pepsList:
     llax = int(person["LAnkle"][0])
     llay =int(person["LAnkle"][1])
 
-    right_x = min([ursx,lrax,lhx])
-    left_x = max([ursx,lrax,lhx])
-
-    yc = [ursy,ulsy,lhy,rhy,llay,lray]
-    print "yc"
-    print yc
+    xc = [ursx,ulsx,lhx,rhx,llax,lrax]
+    yc = [ursy,ulsy,lhy,rhy,llay,lray,]
+    
     nzyc = np.array(yc)
-    print "nzyc"
-    print nzyc[np.nonzero(yc)]
+    yc_list = []
+    for yc_val in nzyc[np.nonzero(yc)]:
+        yc_list.append(yc_val)
 
-    up_y = min(yc)
-    low_y = max(yc)
+    nzxc = np.array(xc)
+    xc_list = []
+    for xc_val in nzxc[np.nonzero(xc)]:
+        xc_list.append(xc_val)
 
-    print "right_x: " + str(ursx) + " left_x: " + str(ulsx) + " up_y: " + str(up_y) + " low_y: " + str(low_y)
+    right_x = min(xc_list)
+    left_x = max(xc_list)
+    up_y = min(yc_list)
+    low_y = max(yc_list)
 
-    #roi = img_rgb[up_y:low_y,right_x:left_x]
-    #roi = img_rgb[right_x:left_x,up_y:low_y]
-    roi = op_img_rgb[up_y:low_y,ursx:ulsx]
+    print "right_x: " + str(right_x) + " left_x: " + str(left_x) + " up_y: " + str(up_y) + " low_y: " + str(low_y)
+
+    roi = op_img_rgb[up_y:low_y,right_x:left_x]
     cv.imwrite(roipath + str(pid) + "_roi.png", roi)
 
     # u_roi = img_rgb[ulsy:rhy, rhx:ulsx]
@@ -438,7 +441,7 @@ for person in pepsList:
 
     #for pt in zip(*loc[::-1]):
     zip_loc = zip(*loc[::-1])
-    pt = zip_loc[len(zip_loc)/2]
+    pt = zip_loc[int(len(zip_loc)/2)]
     cv.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
     cv.putText(img_rgb,"person_" + str(pid), (pt[0] + 10, pt[1] - 10), cv.FONT_HERSHEY_SIMPLEX, 0.5,(255,255,255),1)
 
