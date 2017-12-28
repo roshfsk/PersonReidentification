@@ -15,8 +15,8 @@ import pylab as plt
 inpath = 'test/'
 roipath = 'test_roi/'
 outpath = 'test_out/'
-test_image = 'test/000001.jpg'
-# test_image = 'sample_image/f3.png'
+#test_image = 'test/000050.jpg'
+test_image = 'sample_image/f3.png'
 oriImg = cv.imread(test_image) # B,G,R order
 f = plt.imshow(oriImg[:,:,[2,1,0]]) # reorder it before displaying
 
@@ -318,134 +318,58 @@ plt.imshow(canvas[:,:,[2,1,0]])
 fig = matplotlib.pyplot.gcf()
 fig.set_size_inches(12, 12)
 
-fig.show()
-time.sleep(5)
+# fig.show()
+# time.sleep(5)
 #fig.savefig('out.png')
 
-# personCount = len(all_peaks[2])
-# print "Number of detected people : " + str(personCount)
-# peps={}
-# pepsList=[]
-# pIndex=0
-# sx = 0
-# sy = 0
-# for positionIndex in range(personCount):
-    
-#     print "Person" + str(positionIndex) + " : " + str(pIndex)
-#     if len(all_peaks) > 13:
-#         individual={}
-#         individual["id"]=pIndex
-#         if len(all_peaks[2]) > positionIndex:
-#             index = subset[positionIndex][np.array(limbSeq[2])-1]
-#             if -1 in index:
-#                 continue
-#             cur_canvas = canvas.copy()
-#             Y = candidate[index.astype(int), 0]
-#             X = candidate[index.astype(int), 1]
-#             mX = np.mean(X)
-#             mY = np.mean(Y)
-#             #individual["RShoulder"]=[X[sx],Y[sy]]
-#             individual["RShoulder"]=[mX,mY]
-#             print "RShoulder" + str(individual["RShoulder"])
-#         # else:
-#         #     break
-#         if len(all_peaks[5]) > positionIndex:
-#             index = subset[positionIndex][np.array(limbSeq[5])-1]
-#             if -1 in index:
-#                 continue
-#             cur_canvas = canvas.copy()
-#             Y = candidate[index.astype(int), 0]
-#             X = candidate[index.astype(int), 1]
-#             mX = np.mean(X)
-#             mY = np.mean(Y)
-#             individual["LShoulder"]=[mX,mY]
-#             print "LShoulder" + str(individual["LShoulder"])
-#         # else:
-#         #     break
-#         if len(all_peaks[8]) > positionIndex:
-#             index = subset[positionIndex][np.array(limbSeq[8])-1]
-#             if -1 in index:
-#                 continue
-#             cur_canvas = canvas.copy()
-#             Y = candidate[index.astype(int), 0]
-#             X = candidate[index.astype(int), 1]
-#             mX = np.mean(X)
-#             mY = np.mean(Y)
-#             individual["RHip"]=[mX,mY]
-#             print "RHip" + str(individual["RHip"])
-#             print X
-
-#         # else:
-#         #     break
-#         if len(all_peaks[11]) > positionIndex:
-#             index = subset[positionIndex][np.array(limbSeq[11])-1]
-#             if -1 in index:
-#                 continue
-#             cur_canvas = canvas.copy()
-#             Y = candidate[index.astype(int), 0]
-#             X = candidate[index.astype(int), 1]
-#             mX = np.mean(X)
-#             mY = np.mean(Y)
-#             individual["LHip"]=[mX,mY]
-#             print "LHip" + str(individual["LHip"])
-#         # else:
-#         #     break
-#         if len(all_peaks[10]) > positionIndex:
-#             index = subset[positionIndex][np.array(limbSeq[10])-1]
-#             if -1 in index:
-#                 continue
-#             cur_canvas = canvas.copy()
-#             Y = candidate[index.astype(int), 0]
-#             X = candidate[index.astype(int), 1]
-#             mX = np.mean(X)
-#             mY = np.mean(Y)
-#             individual["RAnkle"]=[mX,mY]
-#             print "RAnkle" + str(individual["RAnkle"])
-#         # else:
-#         #     break
-#         if len(all_peaks[13]) > positionIndex:
-#             index = subset[positionIndex][np.array(limbSeq[13])-1]
-#             if -1 in index:
-#                 continue
-#             cur_canvas = canvas.copy()
-#             Y = candidate[index.astype(int), 0]
-#             X = candidate[index.astype(int), 1]
-#             mX = np.mean(X)
-#             mY = np.mean(Y)
-#             individual["LAnkle"]=[mX,mY]
-#             print "LAnkle" + str(individual["LAnkle"])
-#         # else:
-#         #     break
-
-#         pepsList.append(individual)
-#         pIndex=pIndex+1
-
-# peps["people"]=pepsList
-
-# import json
-# json_string = json.dumps(peps)
-# print "printing json_string"
-# print json_string
-
-#---------------------------------------------------
-
-personCount = len(all_peaks[0])
+personCount = len(all_peaks[2])
 print "Number of detected people : " + str(personCount)
-
 peps={}
 pepsList=[]
-
-positionIndex=0
+pIndex=0
+sx = 0
+sy = 0
 for positionIndex in range(personCount):
-    individual={}
-    individual["id"]=positionIndex
-    individual["RShoulder"]=all_peaks[2][positionIndex]
-    individual["LShoulder"]=all_peaks[5][positionIndex]
-    individual["RHip"]=all_peaks[8][positionIndex]
-    individual["LHip"]=all_peaks[11][positionIndex]
-    individual["RAnkle"]=all_peaks[10][positionIndex]
-    individual["LAnkle"]=all_peaks[13][positionIndex]
-    pepsList.append(individual)
+    
+    print "Person" + str(positionIndex) + " : " + str(pIndex)
+    if len(all_peaks) > 13:
+        
+        individual={}
+
+        individual["id"]=pIndex
+        if len(all_peaks[2]) > positionIndex:
+            individual["RShoulder"]=all_peaks[2][positionIndex]
+            print "RShoulder" + str(individual["RShoulder"])
+        else:
+            break
+        if len(all_peaks[5]) > positionIndex:
+            individual["LShoulder"]=all_peaks[5][positionIndex]
+            print "LShoulder" + str(individual["LShoulder"])
+        else:
+            break
+        if len(all_peaks[8]) > positionIndex:
+            individual["RHip"]=all_peaks[8][positionIndex]
+            print "RHip" + str(individual["RHip"])
+        else:
+            break
+        if len(all_peaks[11]) > positionIndex:
+            individual["LHip"]=all_peaks[11][positionIndex]
+            print "LHip" + str(individual["LHip"])
+        else:
+            break
+        if len(all_peaks[10]) > positionIndex:
+            individual["RAnkle"]=all_peaks[10][positionIndex]
+            print "RAnkle" + str(individual["RAnkle"])
+        else:
+            break
+        if len(all_peaks[13]) > positionIndex:
+            individual["LAnkle"]=all_peaks[13][positionIndex]
+            print "LAnkle" + str(individual["LAnkle"])
+        else:
+            break
+
+        pepsList.append(individual)
+        pIndex=pIndex+1
 
 peps["people"]=pepsList
 
@@ -454,23 +378,25 @@ json_string = json.dumps(peps)
 print "printing json_string"
 print json_string
 
+#---------------------------------------------------
+
 img_rgb = cv.imread(test_image)
+op_img_rgb = cv.imread(test_image)
 img_gray = cv.cvtColor(img_rgb, cv.COLOR_BGR2GRAY)
 
-for person in pepsList:
-        
+for person in pepsList: 
     pid = person["id"]
-    
+
     ursx = int(person["RShoulder"][0])
     ursy =int(person["RShoulder"][1])
     ulsx = int(person["LShoulder"][0])
     ulsy =int(person["LShoulder"][1]) 
-    
+
     rhx = int(person["RHip"][0])
     rhy = int(person["RHip"][1])
     lhx = int(person["LHip"][0])
     lhy = int(person["LHip"][1])
-    
+
     lrax = int(person["RAnkle"][0])
     lray =int(person["RAnkle"][1])
     llax = int(person["LAnkle"][0])
@@ -479,13 +405,21 @@ for person in pepsList:
     right_x = min([ursx,lrax,lhx])
     left_x = max([ursx,lrax,lhx])
 
-    up_y = min([ursy,lhy,lray])
-    low_y = max([ursy,lhy,lray])
+    yc = [ursy,ulsy,lhy,rhy,llay,lray]
+    print "yc"
+    print yc
+    nzyc = np.array(yc)
+    print "nzyc"
+    print nzyc[np.nonzero(yc)]
 
-    print "right_x: " + str(ursx) + " left_x: " + str(ulsx) + " up_y: " + str(min([ursy,ulsy])) + " low_y: " + str(max([lhy,rhy]))
-    
-    # roi = img_rgb[right_x:left_x, up_y:low_y]
-    roi = img_rgb[min([ursy,ulsy]):max([lhy,rhy]),ursx:ulsx]
+    up_y = min(yc)
+    low_y = max(yc)
+
+    print "right_x: " + str(ursx) + " left_x: " + str(ulsx) + " up_y: " + str(up_y) + " low_y: " + str(low_y)
+
+    #roi = img_rgb[up_y:low_y,right_x:left_x]
+    #roi = img_rgb[right_x:left_x,up_y:low_y]
+    roi = op_img_rgb[up_y:low_y,ursx:ulsx]
     cv.imwrite(roipath + str(pid) + "_roi.png", roi)
 
     # u_roi = img_rgb[ulsy:rhy, rhx:ulsx]
@@ -495,7 +429,6 @@ for person in pepsList:
     # cv.imwrite(str(pid) + "lroi.png", l_roi)
 
     template = cv.imread(roipath + str(pid) + "_roi.png",0)
-    #if template.any():    
     w, h = template.shape[::-1]
 
     # Apply template Matching
@@ -504,7 +437,8 @@ for person in pepsList:
     loc = np.where( res >= threshold)
 
     #for pt in zip(*loc[::-1]):
-    pt = zip(*loc[::-1])[0]
+    zip_loc = zip(*loc[::-1])
+    pt = zip_loc[len(zip_loc)/2]
     cv.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
     cv.putText(img_rgb,"person_" + str(pid), (pt[0] + 10, pt[1] - 10), cv.FONT_HERSHEY_SIMPLEX, 0.5,(255,255,255),1)
 
