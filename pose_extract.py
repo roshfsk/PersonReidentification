@@ -15,7 +15,7 @@ import pylab as plt
 inpath = 'test/'
 roipath = 'test_roi/'
 outpath = 'test_out/'
-test_image = 'test/000001.jpg'
+test_image = 'test/1.png'
 #test_image = 'sample_image/f3.png'
 oriImg = cv.imread(test_image) # B,G,R order
 f = plt.imshow(oriImg[:,:,[2,1,0]]) # reorder it before displaying
@@ -213,8 +213,6 @@ for k in range(len(mapIdx)):
         special_k.append(k)
         connection_all.append([])
 
-# last number in each row is the total parts number of that person
-# the second last number in each row is the score of the overall configuration
 subset = -1 * np.ones((0, 20))
 candidate = np.array([item for sublist in all_peaks for item in sublist])
 
@@ -296,7 +294,6 @@ for i in range(17):
     for n in range(len(subset)):
         
         # print "Person : " + str(n)
-
         index = subset[n][np.array(limbSeq[i])-1]
         if -1 in index:
             continue
@@ -306,7 +303,7 @@ for i in range(17):
         mX = np.mean(X)
         mY = np.mean(Y)
 
-        # print "Y : " + str(Y) + " X : " + str(X) + " mX : " + str(mX) + " mY : " + str(mY)
+        print "index : " + str(i) + " Y : " + str(Y) + " X : " + str(X) + " mX : " + str(mX) + " mY : " + str(mY)
 
         length = ((X[0] - X[1]) ** 2 + (Y[0] - Y[1]) ** 2) ** 0.5
         angle = math.degrees(math.atan2(X[0] - X[1], Y[0] - Y[1]))
@@ -318,58 +315,40 @@ plt.imshow(canvas[:,:,[2,1,0]])
 fig = matplotlib.pyplot.gcf()
 fig.set_size_inches(12, 12)
 
-# fig.show()
-# time.sleep(5)
-#fig.savefig('out.png')
+fig.show()
+time.sleep(5)
+fig.savefig('out.png')
 
 personCount = len(all_peaks[2])
-print "Number of detected people : " + str(personCount)
+print "Number of detected people : " + str(len(subset))
 peps={}
 pepsList=[]
 pIndex=0
-sx = 0
-sy = 0
+
+def getMeanCoordinates(n,i):
+    index = subset[n][np.array(limbSeq[i])-1]
+    if -1 in index:
+        return [0,0]
+    Y = candidate[index.astype(int), 0]
+    X = candidate[index.astype(int), 1]
+    mX = np.mean(X)
+    mY = np.mean(Y)
+    return [int(X[1]),int(Y[1])]
+
+#store all x, y coordinates into person arrays
+#get min max for x and y to draw the bounding box
+
 for positionIndex in range(personCount):
     
-    print "Person" + str(positionIndex) + " : " + str(pIndex)
-    if len(all_peaks) > 13:
-        
-        individual={}
+    print "Person" + str(positionIndex) + " : " + str(pIndex)        
+    individual={}
 
-        individual["id"]=pIndex
-        if len(all_peaks[2]) > positionIndex:
-            individual["RShoulder"]=all_peaks[2][positionIndex]
-            print "RShoulder" + str(individual["RShoulder"])
-        else:
-            break
-        if len(all_peaks[5]) > positionIndex:
-            individual["LShoulder"]=all_peaks[5][positionIndex]
-            print "LShoulder" + str(individual["LShoulder"])
-        else:
-            break
-        if len(all_peaks[8]) > positionIndex:
-            individual["RHip"]=all_peaks[8][positionIndex]
-            print "RHip" + str(individual["RHip"])
-        else:
-            break
-        if len(all_peaks[11]) > positionIndex:
-            individual["LHip"]=all_peaks[11][positionIndex]
-            print "LHip" + str(individual["LHip"])
-        else:
-            break
-        if len(all_peaks[10]) > positionIndex:
-            individual["RAnkle"]=all_peaks[10][positionIndex]
-            print "RAnkle" + str(individual["RAnkle"])
-        else:
-            break
-        if len(all_peaks[13]) > positionIndex:
-            individual["LAnkle"]=all_peaks[13][positionIndex]
-            print "LAnkle" + str(individual["LAnkle"])
-        else:
-            break
+    individual["id"]=pIndex
+    for l_index in range(17):
+        individual[str(l_index)]=getMeanCoordinates(positionIndex,l_index)
 
-        pepsList.append(individual)
-        pIndex=pIndex+1
+    pepsList.append(individual)
+    pIndex=pIndex+1
 
 peps["people"]=pepsList
 
@@ -384,27 +363,17 @@ img_rgb = cv.imread(test_image)
 op_img_rgb = cv.imread(test_image)
 img_gray = cv.cvtColor(img_rgb, cv.COLOR_BGR2GRAY)
 
-for person in pepsList: 
+for person in pepsList:
+    # person=pepsList[5] 
     pid = person["id"]
 
-    ursx = int(person["RShoulder"][0])
-    ursy =int(person["RShoulder"][1])
-    ulsx = int(person["LShoulder"][0])
-    ulsy =int(person["LShoulder"][1]) 
+    xc=[]
+    yc=[]
 
-    rhx = int(person["RHip"][0])
-    rhy = int(person["RHip"][1])
-    lhx = int(person["LHip"][0])
-    lhy = int(person["LHip"][1])
+    for pli in range(17):
+        xc.append(person[str(pli)][0])
+        yc.append(person[str(pli)][1])
 
-    lrax = int(person["RAnkle"][0])
-    lray =int(person["RAnkle"][1])
-    llax = int(person["LAnkle"][0])
-    llay =int(person["LAnkle"][1])
-
-    xc = [ursx,ulsx,lhx,rhx,llax,lrax]
-    yc = [ursy,ulsy,lhy,rhy,llay,lray,]
-    
     nzyc = np.array(yc)
     yc_list = []
     for yc_val in nzyc[np.nonzero(yc)]:
@@ -415,6 +384,17 @@ for person in pepsList:
     for xc_val in nzxc[np.nonzero(xc)]:
         xc_list.append(xc_val)
 
+    print "x,y lists"
+    print xc
+    print yc
+
+    print "non zero lists"
+    print xc_list
+    print yc_list
+
+    if len(xc_list) <= 3 & len(yc_list) <= 3:
+        break  
+
     right_x = min(xc_list)
     left_x = max(xc_list)
     up_y = min(yc_list)
@@ -422,7 +402,8 @@ for person in pepsList:
 
     print "right_x: " + str(right_x) + " left_x: " + str(left_x) + " up_y: " + str(up_y) + " low_y: " + str(low_y)
 
-    roi = op_img_rgb[up_y:low_y,right_x:left_x]
+    #roi = op_img_rgb[up_y:low_y,right_x:left_x]
+    roi = op_img_rgb[right_x:left_x,up_y:low_y]
     cv.imwrite(roipath + str(pid) + "_roi.png", roi)
 
     # u_roi = img_rgb[ulsy:rhy, rhx:ulsx]
@@ -442,7 +423,7 @@ for person in pepsList:
     #for pt in zip(*loc[::-1]):
     zip_loc = zip(*loc[::-1])
     pt = zip_loc[int(len(zip_loc)/2)]
-    cv.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
+    #cv.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
     cv.putText(img_rgb,"person_" + str(pid), (pt[0] + 10, pt[1] - 10), cv.FONT_HERSHEY_SIMPLEX, 0.5,(255,255,255),1)
 
 cv.imshow('Detected',img_rgb)
