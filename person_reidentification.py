@@ -374,8 +374,8 @@ for infile in files:
     img_gray=None
     template=None
 
-    #cv.imshow('Detected',img_rgb)
-    #cv.waitKey()
+    cv.imshow('Detected',img_rgb)
+    cv.waitKey()
 
     #---------------------------------------
 

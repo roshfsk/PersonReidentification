@@ -3,13 +3,10 @@ import numpy as np
 
 #s_methods = ['cv2.TM_CCOEFF_NORMED','cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']            
 
-img_rgb = cv2.imread('sample_image/f3.png')
+img_rgb = cv2.imread('temp_roi/2/0.png')
 img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
 
-roi = img_rgb[100:190, 300:370]
-cv2.imwrite("roi.png", roi)
-
-template = cv2.imread('roi.png',0)#'test_roi/2_roi.png',0)
+template = cv2.imread('rz.png',0)#'test_roi/2_roi.png',0)
 w, h = template.shape[::-1]
 
 # Apply template Matching

@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import cv2 as cv 
 import numpy as np
 import scipy
@@ -9,14 +11,26 @@ from config_reader import config_reader
 import util
 import copy
 import matplotlib
-#%matplotlib inline
 import pylab as plt
+import os, glob
+import sys
 
-inpath = 'test/'
+print 'Number of arguments:', len(sys.argv), 'arguments.'
+print 'Argument List:', str(sys.argv)
+
+# fileIndex = int(sys.argv[1])
+fileIndex = 61
+threshold1 = 0.4
+threshold2 = 0.7
+roiMatchMethod1=cv.TM_CCOEFF
+roiMatchMethod2=cv.TM_CCOEFF_NORMED
+outMatchMethod=cv.TM_SQDIFF_NORMED
+inpath = 'test1/'
+posepath = 'test_pose/'
 roipath = 'test_roi/'
 outpath = 'test_out/'
-test_image = 'test/1.png'
-#test_image = 'sample_image/f3.png'
+test_image = inpath + str(fileIndex) + '.jpg'
+
 oriImg = cv.imread(test_image) # B,G,R order
 f = plt.imshow(oriImg[:,:,[2,1,0]]) # reorder it before displaying
 
@@ -119,7 +133,7 @@ plt.figure()
 plt.imshow(oriImg[:,:,[2,1,0]], alpha = .5)
 s = 5
 Q = plt.quiver(X[::s,::s], Y[::s,::s], U[::s,::s], V[::s,::s], 
-               scale=50, headaxislength=4, alpha=.5, width=0.001, color='r')
+            scale=50, headaxislength=4, alpha=.5, width=0.001, color='r')
 
 fig = matplotlib.pyplot.gcf()
 fig.set_size_inches(20, 20)
@@ -158,12 +172,12 @@ for part in range(19-1):
 
 # find connection in the specified sequence, center 29 is in the position 15
 limbSeq = [[2,3], [2,6], [3,4], [4,5], [6,7], [7,8], [2,9], [9,10], \
-           [10,11], [2,12], [12,13], [13,14], [2,1], [1,15], [15,17], \
-           [1,16], [16,18], [3,17], [6,18]]
+        [10,11], [2,12], [12,13], [13,14], [2,1], [1,15], [15,17], \
+        [1,16], [16,18], [3,17], [6,18]]
 # the middle joints heatmap correpondence
 mapIdx = [[31,32], [39,40], [33,34], [35,36], [41,42], [43,44], [19,20], [21,22], \
-          [23,24], [25,26], [27,28], [29,30], [47,48], [49,50], [53,54], [51,52], \
-          [55,56], [37,38], [45,46]]
+        [23,24], [25,26], [27,28], [29,30], [47,48], [49,50], [53,54], [51,52], \
+        [55,56], [37,38], [45,46]]
 
 connection_all = []
 special_k = []
@@ -185,12 +199,12 @@ for k in range(len(mapIdx)):
                 vec = np.divide(vec, norm)
                 
                 startend = zip(np.linspace(candA[i][0], candB[j][0], num=mid_num), \
-                               np.linspace(candA[i][1], candB[j][1], num=mid_num))
+                            np.linspace(candA[i][1], candB[j][1], num=mid_num))
                 
                 vec_x = np.array([score_mid[int(round(startend[I][1])), int(round(startend[I][0])), 0] \
-                                  for I in range(len(startend))])
+                                for I in range(len(startend))])
                 vec_y = np.array([score_mid[int(round(startend[I][1])), int(round(startend[I][0])), 1] \
-                                  for I in range(len(startend))])
+                                for I in range(len(startend))])
 
                 score_midpts = np.multiply(vec_x, vec[0]) + np.multiply(vec_y, vec[1])
                 score_with_dist_prior = sum(score_midpts)/len(score_midpts) + min(0.5*oriImg.shape[0]/norm-1, 0)
@@ -268,8 +282,8 @@ subset = np.delete(subset, deleteIdx, axis=0)
 
 # visualize
 colors = [[255, 0, 0], [255, 85, 0], [255, 170, 0], [255, 255, 0], [170, 255, 0], [85, 255, 0], [0, 255, 0], \
-          [0, 255, 85], [0, 255, 170], [0, 255, 255], [0, 170, 255], [0, 85, 255], [0, 0, 255], [85, 0, 255], \
-          [170, 0, 255], [255, 0, 255], [255, 0, 170], [255, 0, 85]]
+        [0, 255, 85], [0, 255, 170], [0, 255, 255], [0, 170, 255], [0, 85, 255], [0, 0, 255], [85, 0, 255], \
+        [170, 0, 255], [255, 0, 255], [255, 0, 170], [255, 0, 85]]
 cmap = matplotlib.cm.get_cmap('hsv')
 
 canvas = cv.imread(test_image) # B,G,R order
@@ -285,15 +299,11 @@ plt.imshow(to_plot[:,:,[2,1,0]])
 fig = matplotlib.pyplot.gcf()
 fig.set_size_inches(12, 12)
 
-
 # visualize 2
 stickwidth = 4
 
 for i in range(17):
-    # print "Limb : " + str(i) + "-----------------------------------"
     for n in range(len(subset)):
-        
-        # print "Person : " + str(n)
         index = subset[n][np.array(limbSeq[i])-1]
         if -1 in index:
             continue
@@ -302,9 +312,7 @@ for i in range(17):
         X = candidate[index.astype(int), 1]
         mX = np.mean(X)
         mY = np.mean(Y)
-
-        print "index : " + str(i) + " Y : " + str(Y) + " X : " + str(X) + " mX : " + str(mX) + " mY : " + str(mY)
-
+        # print "index : " + str(i) + " Y : " + str(Y) + " X : " + str(X) + " mX : " + str(mX) + " mY : " + str(mY)
         length = ((X[0] - X[1]) ** 2 + (Y[0] - Y[1]) ** 2) ** 0.5
         angle = math.degrees(math.atan2(X[0] - X[1], Y[0] - Y[1]))
         polygon = cv.ellipse2Poly((int(mY),int(mX)), (int(length/2), stickwidth), int(angle), 0, 360, 1)
@@ -315,18 +323,26 @@ plt.imshow(canvas[:,:,[2,1,0]])
 fig = matplotlib.pyplot.gcf()
 fig.set_size_inches(12, 12)
 
-fig.show()
-time.sleep(5)
-fig.savefig('out.png')
+# fig.show()
+# time.sleep(5)
+fig.savefig(posepath + str(fileIndex) + "_pose.png")
+
+from timeit import default_timer as timer
+
+rec_start = timer()
 
 personCount = len(all_peaks[2])
 print "Number of detected people : " + str(len(subset))
-peps={}
 pepsList=[]
 pIndex=0
 
 def getMeanCoordinates(n,i):
-    index = subset[n][np.array(limbSeq[i])-1]
+    if len(subset) < n:
+        return [0,0]
+    try:
+        index = subset[n][np.array(limbSeq[i])-1]
+    except Exception:
+        return [0,0]
     if -1 in index:
         return [0,0]
     Y = candidate[index.astype(int), 0]
@@ -342,34 +358,23 @@ for positionIndex in range(personCount):
     
     print "Person" + str(positionIndex) + " : " + str(pIndex)        
     individual={}
-
     individual["id"]=pIndex
     for l_index in range(17):
         individual[str(l_index)]=getMeanCoordinates(positionIndex,l_index)
-
     pepsList.append(individual)
     pIndex=pIndex+1
 
-peps["people"]=pepsList
+#ROI extraction and template matching
 
-import json
-json_string = json.dumps(peps)
-print "printing json_string"
-print json_string
-
-#---------------------------------------------------
-
-img_rgb = cv.imread(test_image)
+img_rgb = cv.imread(test_image,0)
+out_img_rgb = cv.imread(test_image)
 op_img_rgb = cv.imread(test_image)
-img_gray = cv.cvtColor(img_rgb, cv.COLOR_BGR2GRAY)
+foundintemplatefiles=[]
 
 for person in pepsList:
-    # person=pepsList[5] 
     pid = person["id"]
-
     xc=[]
     yc=[]
-
     for pli in range(17):
         xc.append(person[str(pli)][0])
         yc.append(person[str(pli)][1])
@@ -384,15 +389,7 @@ for person in pepsList:
     for xc_val in nzxc[np.nonzero(xc)]:
         xc_list.append(xc_val)
 
-    print "x,y lists"
-    print xc
-    print yc
-
-    print "non zero lists"
-    print xc_list
-    print yc_list
-
-    if len(xc_list) <= 3 & len(yc_list) <= 3:
+    if (len(xc_list) <= 3) and (len(yc_list) <= 3):
         break  
 
     right_x = min(xc_list)
@@ -400,31 +397,153 @@ for person in pepsList:
     up_y = min(yc_list)
     low_y = max(yc_list)
 
-    print "right_x: " + str(right_x) + " left_x: " + str(left_x) + " up_y: " + str(up_y) + " low_y: " + str(low_y)
+    if (left_x-right_x < 20) or (low_y-up_y < 20):
+        break
+
+    print "pid: " + str(pid) +" right_x: " + str(right_x) + " left_x: " + str(left_x) + " up_y: " + str(up_y) + " low_y: " + str(low_y)
 
     #roi = op_img_rgb[up_y:low_y,right_x:left_x]
     roi = op_img_rgb[right_x:left_x,up_y:low_y]
-    cv.imwrite(roipath + str(pid) + "_roi.png", roi)
+    temproipath = "temp_roi/" + str(fileIndex) + "/"
+    if not os.path.exists(temproipath):
+        os.makedirs(temproipath)
+    cv.imwrite(temproipath + str(pid) + ".png", roi)
+    
+#--------------------  
 
-    # u_roi = img_rgb[ulsy:rhy, rhx:ulsx]
-    # cv.imwrite(str(pid) + "uroi.png", u_roi)
+    if fileIndex > 1:
+        matcherroipath = temproipath + str(pid) + ".png"
+        matcherroi = cv.imread(matcherroipath)
+        # wm, hm = matcherroi.shape[::-1]
 
-    # l_roi = img_rgb[rhy:llay, rhx:llax]
-    # cv.imwrite(str(pid) + "lroi.png", l_roi)
+        templateloadpath = r'' + roipath + str(fileIndex-1) +'/'
+        files = glob.glob( os.path.join(templateloadpath, '*.*'))
+        files.sort()
 
-    template = cv.imread(roipath + str(pid) + "_roi.png",0)
+        intemplatefileindex = 0
+        for intemplatefile in files:
+            print "template matcher inpath : " + intemplatefile
+            foundlen = len(foundintemplatefiles)
+            print "Found paths count : " + str(len(files))
+
+            if foundlen > 0:
+                try:
+                    findex = foundintemplatefiles.index(intemplatefile)
+                    if findex >= 0:                        
+                        intemplatefileindex += 1
+                        if intemplatefileindex == len(files)-1:
+                            if len(files) < len(pepsList):
+                                print "templateCheck adding new entry"
+                                newsavepath = r'' + roipath + str(fileIndex) +'/' 
+                                if not os.path.exists(newsavepath):
+                                    os.makedirs(newsavepath)
+                                cv.imwrite(newsavepath + str(pid) + ".png", roi)
+                                break
+                        print intemplatefile + " Already found. Skipping...."        
+                        continue
+                except ValueError:
+                    print intemplatefile + " Not used before. passing on...."
+                    pass
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            imagetocheck = cv.imread(matcherroipath)
+            imagetocheck2 = cv.imread(matcherroipath,0)
+            iw, ih = imagetocheck2.shape[::-1]
+            img_gray = cv.cvtColor(imagetocheck, cv.COLOR_BGR2GRAY)
+
+            template = cv.imread(intemplatefile,0)
+            ctemp = cv.imread(intemplatefile)
+            w, h = template.shape[::-1]
+
+            newwidth = w
+            newheight = h
+
+            wratio = float(w)/float(iw)
+            hratio = float(h)/float(ih)
+            resizeratio = hratio
+
+            if wratio > hratio:
+                resizeratio = wratio
+
+            if resizeratio > 0:
+                newheight = float(h)/resizeratio
+                newwidth = float(w)/resizeratio
+
+            resized_t = cv.resize(ctemp,(int(newwidth), int(newheight)), interpolation = cv.INTER_CUBIC)
+            # cv2.imshow("Resized", resized_t)
+            cv.imwrite(str(pid)+"rz.png", resized_t)
+
+            nt = cv.imread(str(pid)+"rz.png",0)
+            wt,ht = nt.shape[::-1]
+
+            # Apply template Matching 1
+            res1 = cv.matchTemplate(img_gray,nt,roiMatchMethod1)
+            min_val1, max_val1, min_loc1, max_loc1 = cv.minMaxLoc(res1)
+            print "min_val1 : " + str(min_val1) + " max_val1 : " + str(max_val1) + " min_loc1 : " + str(min_loc1) + " max_loc1 : " + str(max_loc1)
+            loc1 = np.where(res1 >= threshold1)
+            zip_loc1 = zip(*loc1[::-1])
+
+            # Apply template Matching 1
+            res2 = cv.matchTemplate(img_gray,nt,roiMatchMethod2)
+            min_val2, max_val2, min_loc2, max_loc2 = cv.minMaxLoc(res2)
+            print "min_val2 : " + str(min_val2) + " max_val2 : " + str(max_val2) + " min_loc2 : " + str(min_loc2) + " max_loc2 : " + str(max_loc2)
+
+            if max_val2 >= threshold2 : 
+                print "Match found! Saving..."
+                splittedpath = intemplatefile.split('/')
+                person_id_png = splittedpath[len(splittedpath)-1]
+                newsavepath = r'' + roipath + str(fileIndex) +'/' 
+                if not os.path.exists(newsavepath):
+                    os.makedirs(newsavepath)
+                cv.imwrite(newsavepath + person_id_png, matcherroi)
+                foundintemplatefiles.append(intemplatefile)
+                break
+            # elif (len(zip_loc1) > 0) and (max_loc2 == max_loc1):
+            #     print "Match found! Saving..."
+            #     splittedpath = intemplatefile.split('/')
+            #     person_id_png = splittedpath[len(splittedpath)-1]
+            #     newsavepath = r'' + roipath + str(fileIndex) +'/' 
+            #     if not os.path.exists(newsavepath):
+            #         os.makedirs(newsavepath)
+            #     cv.imwrite(newsavepath + person_id_png, matcherroi)
+            #     foundintemplatefiles.append(intemplatefile)
+            #     break
+            else:
+                print "templateCheck Not found : " + str(intemplatefileindex)
+            intemplatefileindex += 1
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#---------------------
+    else:
+        newsavepath = r'' + roipath + str(fileIndex) +'/' 
+        if not os.path.exists(newsavepath):
+            os.makedirs(newsavepath)
+        cv.imwrite(newsavepath + str(pid) + ".png", roi)
+
+
+if fileIndex > 1:
+    templateloadpath = r'' + roipath + str(fileIndex-1) +'/'
+else:
+    templateloadpath = r'' + roipath + str(fileIndex) +'/'
+files = glob.glob( os.path.join(templateloadpath, '*.*'))
+#files.sort()
+for intemplatefile in files:
+    
+    print "intemplatefilePath : " + intemplatefile
+    template = cv.imread(intemplatefile,0)
     w, h = template.shape[::-1]
 
-    # Apply template Matching
-    res = cv.matchTemplate(img_gray,template,cv.TM_CCOEFF_NORMED)
-    threshold = 0.8
-    loc = np.where( res >= threshold)
+    #Template Matching
+    res = cv.matchTemplate(img_rgb,template,outMatchMethod)
+    min_val, max_val, min_loc, max_loc = cv.minMaxLoc(res)
+    top_left = min_loc
+    bottom_right = (top_left[0] + w, top_left[1] + h)
+    cv.rectangle(out_img_rgb,top_left, bottom_right, [0,0,255], 2)
+    splittedpath = intemplatefile.split('/')
+    person_id = splittedpath[len(splittedpath)-1]
+    cv.putText(out_img_rgb,person_id, (int(top_left[0]) + 10, int(top_left[1]) + 20), cv.FONT_HERSHEY_SIMPLEX, 0.7,(255,255,255),1)
 
-    #for pt in zip(*loc[::-1]):
-    zip_loc = zip(*loc[::-1])
-    pt = zip_loc[int(len(zip_loc)/2)]
-    #cv.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
-    cv.putText(img_rgb,"person_" + str(pid), (pt[0] + 10, pt[1] - 10), cv.FONT_HERSHEY_SIMPLEX, 0.5,(255,255,255),1)
-
-cv.imshow('Detected',img_rgb)
-cv.waitKey()
+#cv.imshow('Detected',out_img_rgb)
+#cv.waitKey()
+cv.imwrite(outpath + str(fileIndex) + ".png", out_img_rgb)
+rec_end = timer()
+print(rec_end - rec_start) 
